@@ -1,0 +1,2430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz for Exam 16.09.2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1.5;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .correct {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46;
+        }
+        .incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b;
+        }
+        .selected {
+            background-color: #e0f2fe;
+            border-color: #38bdf8;
+        }
+        .question-nav-btn {
+            transition: all 0.2s ease-in-out;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .question-nav-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .question-nav-btn.answered-correct {
+            background-color: #bfdbfe; /* Tailwind blue-200 */
+            border-color: #60a5fa; /* Tailwind blue-400 */
+            color: #1e40af; /* Tailwind blue-800 */
+        }
+        .question-nav-btn.answered-incorrect {
+            background-color: #fecaca; /* Tailwind red-200 */
+            border-color: #f87171; /* Tailwind red-400 */
+            color: #991b1b; /* Tailwind red-900 */
+        }
+        .question-nav-btn:hover:not(.active) {
+            background-color: #f3f4f6;
+        }
+        /* Styles for Edit Mode */
+        .edit-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+        .edit-label {
+            font-weight: 500;
+            color: #374151;
+            margin-top: 12px;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-8">
+
+    <div id="quiz-container" class="quiz-container w-full">
+        
+        <div class="text-center mb-8 relative">
+            <h1 class="text-3xl font-bold text-gray-800">Quiz for Exam 16.09.2025</h1>
+            <p id="quiz-subtitle" class="text-gray-500 mt-2">Subject: Physiopathology 1</p>
+            <p class="text-gray-500">Lecturer: Seng Chhun & Kong Bore & គ្រូតា
+            <div class="absolute top-0 left-0 flex gap-2">
+                <button id="practice-sheet-btn" class="bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200 text-sm">Practice Sheet</button>
+                <button id="show-all-btn" class="bg-green-100 text-green-700 font-semibold py-2 px-4 rounded-lg hover:bg-green-200 text-sm">Show Answers</button>
+            </div>
+            <button id="edit-quiz-btn" class="absolute top-0 right-0 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 text-sm">Edit Quiz</button>
+        </div>
+
+        <div class="text-center mb-6">
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button id="part1-btn" type="button" class="py-2 px-6 text-sm font-medium text-white bg-indigo-600 rounded-l-lg border border-gray-200 hover:bg-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+                    Part 1
+                </button>
+                <button id="part2-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+                    Part 2
+                </button>
+                 <button id="part3-btn" type="button" class="py-2 px-6 text-sm font-medium text-gray-900 bg-white rounded-r-md border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+                    Part 3
+                </button>
+            </div>
+        </div>
+
+
+        <div id="quiz-view">
+            <div class="flex justify-between items-center mb-4">
+                 <div id="main-score-text" class="text-lg font-bold text-indigo-600"></div>
+                 <button id="redo-part-btn" class="bg-orange-100 text-orange-700 font-semibold py-2 px-4 rounded-lg hover:bg-orange-200 text-sm">Redo Part</button>
+            </div>
+            <div id="question-navigation" class="flex flex-wrap justify-center gap-2 mb-6">
+                <!-- Question number buttons will be dynamically inserted here -->
+            </div>
+
+            <div id="question-area" class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="question-number" class="text-xl font-semibold text-gray-700"></h2>
+                   
+                </div>
+                <div id="question-text" class="text-lg text-gray-800 leading-relaxed"></div>
+            </div>
+
+            <div id="answer-area" class="grid grid-cols-1 md-grid-cols-2 gap-4">
+                <!-- Options will be dynamically inserted here -->
+            </div>
+
+            <div id="feedback-area" class="mt-6 text-center text-lg font-medium"></div>
+
+            <div class="mt-6 text-center">
+                <button id="redo-btn" class="hidden bg-yellow-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-yellow-600 transition-colors duration-300 shadow-lg">
+                    Redo Question
+                </button>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+                <button id="prev-btn" class="bg-gray-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-600 transition-colors duration-300 shadow-lg hidden">
+                    <span class="font-semibold">&larr; Previous</span>
+                </button>
+                <button id="next-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg hidden ml-auto">
+                    <span class="font-semibold">Next Question</span>
+                </button>
+            </div>
+
+            <div id="results-area" class="hidden text-center">
+                <div class="mb-4">
+                    <h2 class="text-4xl font-extrabold text-gray-800">Quiz Complete!</h2>
+                </div>
+                <p id="results-score" class="text-2xl text-gray-600 mb-6"></p>
+                <div id="summary" class="text-left mt-8 bg-gray-50 p-6 rounded-lg">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-700">Review Your Answers:</h3>
+                    </div>
+                </div>
+                <button id="restart-btn" class="mt-8 bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg">
+                    <span class="font-semibold">Play Again</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="practice-sheet-view" class="hidden">
+            <!-- Content generated by JS -->
+        </div>
+
+        <div id="all-questions-view" class="hidden">
+            <!-- Content for showing all answers -->
+        </div>
+
+        <div id="edit-view" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Edit Quiz Questions</h2>
+            <div id="edit-question-navigation" class="flex flex-wrap justify-center gap-2 mb-6">
+                <!-- Edit mode question number buttons will be dynamically inserted here -->
+            </div>
+            <div id="edit-questions-container"></div>
+            <div class="flex justify-between items-start mt-8">
+                <button id="add-question-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Add Question</button>
+                <div>
+                    <button id="cancel-edit-btn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 mr-4">Cancel</button>
+                    <button id="apply-preview-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Apply to Preview</button>
+                    <button id="generate-save-code-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 ml-4">Generate Save Code</button>
+                </div>
+            </div>
+            <div id="export-area" class="hidden mt-6 p-4 border-2 border-dashed border-purple-400 rounded-lg bg-purple-50">
+                <h3 class="text-lg font-semibold text-purple-800">How to Save Your Changes Permanently</h3>
+                <ol class="list-decimal list-inside text-gray-700 space-y-2 mt-2">
+                    <li>All the code for your updated quiz is in the text box below.</li>
+                    <li>Click anywhere in the box to automatically copy all the code.</li>
+                    <li>Paste the copied code in a new message and send it to me.</li>
+                    <li>I will then update the file for you with your permanent changes.</li>
+                </ol>
+                <textarea id="export-output" readonly class="w-full h-64 p-2 border rounded-md bg-gray-100 font-mono text-sm focus:ring-2 focus:ring-indigo-500 mt-4 cursor-pointer"></textarea>
+                <p id="copy-feedback" class="text-purple-700 font-medium text-sm mt-2 h-4"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizDataPart1 = [
+    {
+        "number": 1,
+        "type": "mcq",
+        "question": {
+            "en": "How many factor coagulations?"
+        },
+        "options": {
+            "en": [
+                "11 Factor coagulations",
+                "12 Factor coagulations",
+                "9 Factor coagulations",
+                "13 Factor coagulations"
+            ]
+        },
+        "answer": {
+            "en": "13 Factor coagulations"
+        }
+    },
+    {
+        "number": 2,
+        "type": "mcq",
+        "question": {
+            "en": "Which Factor coagulation that transform fibrinogen to fibrin?"
+        },
+        "options": {
+            "en": [
+                "Factor VII",
+                "Factor X",
+                "Factor II",
+                "Factor V"
+            ]
+        },
+        "answer": {
+            "en": "Factor II"
+        }
+    },
+    {
+        "number": 3,
+        "type": "mcq",
+        "question": {
+            "en": "Which enzyme that activates the intrinsic pathway in the clotting cascade?"
+        },
+        "options": {
+            "en": [
+                "Fibrin",
+                "Plasmin",
+                "Thrombin",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "Thrombin"
+        }
+    },
+    {
+        "number": 4,
+        "type": "mcq",
+        "question": {
+            "en": "Which initial pathway that lead to fibrin formation?"
+        },
+        "options": {
+            "en": [
+                "Contact activation pathway",
+                "Tissue factor pathway",
+                "Final common pathway",
+                "A and B are correct"
+            ]
+        },
+        "answer": {
+            "en": "A and B are correct"
+        }
+    },
+    {
+        "number": 5,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the correct definition of DIC?"
+        },
+        "options": {
+            "en": [
+                "Accelerated clotting within blood vessels",
+                "Increased consumption of platelets and clotting factor",
+                "Uncontrollable bleeding",
+                "All above are correct."
+            ]
+        },
+        "answer": {
+            "en": "All above are correct."
+        }
+    },
+    {
+        "number": 6,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the correct definition of DVT?"
+        },
+        "options": {
+            "en": [
+                "The type of thrombosis involving the formation of blood in a deep vein.",
+                "The type of thrombosis involving the formation of blood in superficial vein.",
+                "The consumption of platelets in the deep vein.",
+                "The process of blood change from a liquid to a gel in the deep vein."
+            ]
+        },
+        "answer": {
+            "en": "The type of thrombosis involving the formation of blood in a deep vein."
+        }
+    },
+    {
+        "number": 7,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the progenitor cell of Natural killer cell?"
+        },
+        "options": {
+            "en": [
+                "Myeloid",
+                "Mast cell",
+                "Megakaryocyte",
+                "Lymphoid"
+            ]
+        },
+        "answer": {
+            "en": "Lymphoid"
+        }
+    },
+    {
+        "number": 8,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the progenitor cell of Mast Cell?"
+        },
+        "options": {
+            "en": [
+                "Erythrocyte",
+                "Monocyte",
+                "Myeloid",
+                "Thrombocyte"
+            ]
+        },
+        "answer": {
+            "en": "Myeloid"
+        }
+    },
+    {
+        "number": 9,
+        "type": "mcq",
+        "question": {
+            "en": "Which organ that Hematopoietic stem cells (HSCs) reside in?"
+        },
+        "options": {
+            "en": [
+                "Muscle",
+                "Bone marrow",
+                "Cerebral",
+                "Liver"
+            ]
+        },
+        "answer": {
+            "en": "Bone marrow"
+        }
+    },
+    {
+        "number": 10,
+        "type": "mcq",
+        "question": {
+            "en": "Which potency that stem cell can differentiate a number of cell type, but only those of a closely related family of cells?"
+        },
+        "options": {
+            "en": [
+                "Totipotent",
+                "Multipotent",
+                "Unipotent",
+                "Pluripotent"
+            ]
+        },
+        "answer": {
+            "en": "Multipotent"
+        }
+    },
+    {
+        "number": 11,
+        "type": "mcq",
+        "question": {
+            "en": "Which potency of stem cell that also known as omnipotent?"
+        },
+        "options": {
+            "en": [
+                "Unipotent",
+                "Pluripotent",
+                "Totipotent",
+                "Oligopotent"
+            ]
+        },
+        "answer": {
+            "en": "Totipotent"
+        }
+    },
+    {
+        "number": 12,
+        "type": "mcq",
+        "question": {
+            "en": "Which potency that stem cell can differentiate into a few cell types, such as lymphoid or myeloid?"
+        },
+        "options": {
+            "en": [
+                "Pluripotent",
+                "Unipotent",
+                "Multipotent",
+                "Oligopotent"
+            ]
+        },
+        "answer": {
+            "en": "Oligopotent"
+        }
+    },
+    {
+        "number": 13,
+        "type": "mcq",
+        "question": {
+            "en": "Which potency that stem cell can produce only one cell type?"
+        },
+        "options": {
+            "en": [
+                "Unipotent",
+                "Totipotent",
+                "Pluripotent",
+                "Omnipotent"
+            ]
+        },
+        "answer": {
+            "en": "Unipotent"
+        }
+    },
+    {
+        "number": 14,
+        "type": "mcq",
+        "question": {
+            "en": "How many cell divisions in Self-renewal of stem cell?"
+        },
+        "options": {
+            "en": [
+                "2 (Symmetric and asymmetric)",
+                "3 (Unipotent, Multipotent, Totipotent)",
+                "2 (Asymmetric and Multipotent)",
+                "4 (Totipotent, Pluripotent, Multipotent, Unipotent)"
+            ]
+        },
+        "answer": {
+            "en": "2 (Symmetric and asymmetric)"
+        }
+    },
+    {
+        "number": 15,
+        "type": "mcq",
+        "question": {
+            "en": "What are the Lineages of the blood cell types?"
+        },
+        "options": {
+            "en": [
+                "Myeloid and Lymphoid.",
+                "Megakaryocyte, Erythrocyte, Monocyte and Lymphocyte.",
+                "Eosinophil, Basophile, Neutrophils, Macrophage and Dendritic cell.",
+                "Myeloid, Lymphocytes and Red blood cell."
+            ]
+        },
+        "answer": {
+            "en": "Myeloid and Lymphoid."
+        }
+    },
+    {
+        "number": 16,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is Virchow’s triad of the three-broad category of factor that are thought to contribute to thrombosis?"
+        },
+        "options": {
+            "en": [
+                "Stasis",
+                "Hypercoagulability",
+                "Vessel wall injury",
+                "All above are correct."
+            ]
+        },
+        "answer": {
+            "en": "All above are correct."
+        }
+    },
+    {
+        "number": 17,
+        "type": "mcq",
+        "question": {
+            "en": "Which part of the body that most commonly have DVT?"
+        },
+        "options": {
+            "en": [
+                "Lower Limbs",
+                "Arms",
+                "Mesenteric veins",
+                "Pulmonary vein"
+            ]
+        },
+        "answer": {
+            "en": "Lower Limbs"
+        }
+    },
+    {
+        "number": 18,
+        "type": "mcq",
+        "question": {
+            "en": "Upper extremity DVTs can occur in which place?"
+        },
+        "options": {
+            "en": [
+                "Subclavian",
+                "Axillary",
+                "Brachial",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "All above are correct"
+        }
+    },
+    {
+        "number": 19,
+        "type": "mcq",
+        "question": {
+            "en": "Which score that we use in assessment of clinical in DVT?"
+        },
+        "options": {
+            "en": [
+                "Well Score",
+                "HAS-BLED Score",
+                "Child Pugh score",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "Well Score"
+        }
+    },
+    {
+        "number": 20,
+        "type": "mcq",
+        "question": {
+            "en": "The switch from primitive hematopoiesis to definitive hematopoiesis can occur on which day?"
+        },
+        "options": {
+            "en": [
+                "Day 5 and day 7",
+                "Day 8 and day 10",
+                "Day 10 and day 11",
+                "Day 12 and 14"
+            ]
+        },
+        "answer": {
+            "en": "Day 12 and 14"
+        }
+    },
+    {
+        "number": 21,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is a myriad of intrinsic and extrinsic factor contribute to the formation of varicose vein?"
+        },
+        "options": {
+            "en": [
+                "Gender",
+                "Pregnancy",
+                "Obesity",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "All above are correct"
+        }
+    },
+    {
+        "number": 22,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the primary pathology that relate to varicose vein?"
+        },
+        "options": {
+            "en": [
+                "Elevated venous pressure in the extremities",
+                "Decrease blood flow to the extremities",
+                "Inflammation of the vein",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "Elevated venous pressure in the extremities"
+        }
+    },
+    {
+        "number": 23,
+        "type": "mcq",
+        "question": {
+            "en": "Which genetic disorders that have been correlated with varicose veins disease?"
+        },
+        "options": {
+            "en": [
+                "Mutation in FOXC2",
+                "Thrombomodulin (THBD)",
+                "Desmulin (SYNM)",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "All above are correct"
+        }
+    },
+    {
+        "number": 24,
+        "type": "mcq",
+        "question": {
+            "en": "The Trendelenburg test is that we use ib which pathology?"
+        },
+        "options": {
+            "en": [
+                "DVT",
+                "DIC",
+                "Varicose vein",
+                "AVC"
+            ]
+        },
+        "answer": {
+            "en": "Varicose vein"
+        }
+    },
+    {
+        "number": 25,
+        "type": "mcq",
+        "question": {
+            "en": "Varicose veins are characterized by subcutaneous dilated, tortuous veins greater than or egual to."
+        },
+        "options": {
+            "en": [
+                "five milimeter",
+                "three milimeter",
+                "six milimeter",
+                "two milimeter"
+            ]
+        },
+        "answer": {
+            "en": "three milimeter"
+        }
+    },
+    {
+        "number": 26,
+        "type": "mcq",
+        "question": {
+            "en": "Which vein that invlove in varicose veins?"
+        },
+        "options": {
+            "en": [
+                "Pulmonary vein",
+                "Jugular vein",
+                "saphenous vein",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "saphenous vein"
+        }
+    },
+    {
+        "number": 27,
+        "type": "mcq",
+        "question": {
+            "en": "What is thrombosis?"
+        },
+        "options": {
+            "en": [
+                "Is the mechanism that prevents the loss of blood",
+                "Is the mechanism that produce red blood cell",
+                "Is the mechanism that bind white blood cell",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "Is the mechanism that prevents the loss of blood"
+        }
+    },
+    {
+        "number": 28,
+        "type": "mcq",
+        "question": {
+            "en": "Which one is the symptoms of Deep vein thrombosis?"
+        },
+        "options": {
+            "en": [
+                "Itching around the vein",
+                "Bulging, bluish vein",
+                "Swelling of entire lower limbs",
+                "Nigth time leg cramps."
+            ]
+        },
+        "answer": {
+            "en": "Swelling of entire lower limbs"
+        }
+    },
+    {
+        "number": 29,
+        "type": "mcq",
+        "question": {
+            "en": "What is red blood cell?"
+        },
+        "options": {
+            "en": [
+                "Is the Oxygen-carrying cells.",
+                "Immune cell.",
+                "Progenitor of T cell and B cell.",
+                "All above are correct"
+            ]
+        },
+        "answer": {
+            "en": "Is the Oxygen-carrying cells."
+        }
+    },
+    {
+        "number": 30,
+        "type": "mcq",
+        "question": {
+            "en": "Which cell is compose of Lymphoid lineage?"
+        },
+        "options": {
+            "en": [
+                "Erythrocyte",
+                "Macrophage",
+                "Megakaryocytes",
+                "Natural killer cell"
+            ]
+        },
+        "answer": {
+            "en": "Natural killer cell"
+        }
+    }
+];
+        const quizDataPart2 = [
+    {
+        "number": 1,
+        "type": "mcq",
+        "question": {
+            "en": "What is leukemia?"
+        },
+        "options": {
+            "en": [
+                "An infection of white blood cells",
+                "A cancer of Red blood cells",
+                "A cancer of White blood cells",
+                "None of above"
+            ]
+        },
+        "answer": {
+            "en": "A cancer of White blood cells"
+        }
+    },
+    {
+        "number": 2,
+        "type": "mcq",
+        "question": {
+            "en": "Which are the most antiplatelets Antibody in Idiopathic thrombocytopenia purpura?"
+        },
+        "options": {
+            "en": [
+                "IgM",
+                "IgA",
+                "IgE",
+                "IgG"
+            ]
+        },
+        "answer": {
+            "en": "IgG"
+        }
+    },
+    {
+        "number": 3,
+        "type": "mcq",
+        "question": {
+            "en": "Which of the following is true regarding the Philadelphia chromosome?"
+        },
+        "options": {
+            "en": [
+                "It is the result of a reciprocal translocation between the long arms of chromosomes 22 and 9",
+                "The BCR/ABL fusion gene that results encodes for a protein with strong tyrosine kinase activity",
+                "A cytogenetic change results in the relocation of the ABL oncogene from chromosome 9 to chromosome 22",
+                "All of the above"
+            ]
+        },
+        "answer": {
+            "en": "All of the above"
+        }
+    },
+    {
+        "number": 4,
+        "type": "mcq",
+        "question": {
+            "en": "which form is the newest form of treatment for leukemia?"
+        },
+        "options": {
+            "en": [
+                "Stem cell transplantation",
+                "Surgery",
+                "Chemotherapy",
+                "Radiotherapy"
+            ]
+        },
+        "answer": {
+            "en": "Stem cell transplantation"
+        }
+    },
+    {
+        "number": 5,
+        "type": "mcq",
+        "question": {
+            "en": "This about alpha thalassemia is correct:"
+        },
+        "options": {
+            "en": [
+                "Number of gene mutations decide the severity of the condition",
+                "Hemoglobin fails to produce enough alpha protein in alpha thalassemia",
+                "Alpha thalassemia is common in southeast Asia, southern Asia, India etc",
+                "All of the above"
+            ]
+        },
+        "answer": {
+            "en": "All of the above"
+        }
+    },
+    {
+        "number": 6,
+        "type": "mcq",
+        "question": {
+            "en": "Von Willebrand disease is a hereditary deficiency or abnormality in von Willebrand factor, which affects how the blood clots in the body. In patients with this disease, which of the following laboratory tests usually indicates that blood clotting is prolonged?"
+        },
+        "options": {
+            "en": [
+                "Factor VIII level",
+                "Partial thromboplastic time",
+                "Platelets counts",
+                "Prothrombin time"
+            ]
+        },
+        "answer": {
+            "en": "Partial thromboplastic time"
+        }
+    },
+    {
+        "number": 7,
+        "type": "mcq",
+        "question": {
+            "en": "Most of coagulation factor are made by liver, except:"
+        },
+        "options": {
+            "en": [
+                "Factor XII",
+                "Factor V and IX",
+                "Factor VIII and XIII",
+                "Factor X and VIII"
+            ]
+        },
+        "answer": {
+            "en": "Factor VIII and XIII"
+        }
+    },
+    {
+        "number": 8,
+        "type": "mcq",
+        "question": {
+            "en": "what is the most common type of vWD?"
+        },
+        "options": {
+            "en": [
+                "Type 1",
+                "Type 2",
+                "Type 3",
+                "Type 4"
+            ]
+        },
+        "answer": {
+            "en": "Type 1"
+        }
+    },
+    {
+        "number": 9,
+        "type": "mcq",
+        "question": {
+            "en": "Hemophilia is a:"
+        },
+        "options": {
+            "en": [
+                "X-linked",
+                "Y-linked",
+                "Z-linked",
+                "Autosomal"
+            ]
+        },
+        "answer": {
+            "en": "X-linked"
+        }
+    },
+    {
+        "number": 10,
+        "type": "mcq",
+        "question": {
+            "en": "Hemophilia is a most common in"
+        },
+        "options": {
+            "en": [
+                "Male",
+                "Female",
+                "Both male and Female",
+                "Infant"
+            ]
+        },
+        "answer": {
+            "en": "Male"
+        }
+    },
+    {
+        "number": 11,
+        "type": "mcq",
+        "question": {
+            "en": "All of the following statements are true about Idiopathic Thrombocytopenic Purpura (ITP) except ?"
+        },
+        "options": {
+            "en": [
+                "A recent history of viral illness is described in 50-65% of cases of childhood ITP",
+                "Autoantibodies directed against the platelet surface develops",
+                "EBV related ITP is usually of short duration and HIV associated ITP is usually chronic",
+                "Splenomegaly is frequently seen"
+            ]
+        },
+        "answer": {
+            "en": "Splenomegaly is frequently seen"
+        }
+    },
+    {
+        "number": 12,
+        "type": "mcq",
+        "question": {
+            "en": "In 70-80% of children who present with acute ITP, spontaneous resolution occurs within ?"
+        },
+        "options": {
+            "en": [
+                "3 months",
+                "6 months",
+                "9 months",
+                "1 year"
+            ]
+        },
+        "answer": {
+            "en": "6 months"
+        }
+    },
+    {
+        "number": 13,
+        "type": "mcq",
+        "question": {
+            "en": "the function of platelets"
+        },
+        "options": {
+            "en": [
+                "Activated platelets factor 3 (PF-3)",
+                "Platelets release ADP and TxA2",
+                "Platelets plug formation",
+                "All above"
+            ]
+        },
+        "answer": {
+            "en": "All above"
+        }
+    },
+    {
+        "number": 14,
+        "type": "mcq",
+        "question": {
+            "en": "This about beta-thalassemia is true"
+        },
+        "options": {
+            "en": [
+                "two genes are necessary to make beta-globin chains",
+                "Mutation of genes decide the severity of the condition",
+                "Beta thalassemia is a common condition in West Asia, North Africa and the Mediterranean islands",
+                "All of these"
+            ]
+        },
+        "answer": {
+            "en": "All of these"
+        }
+    },
+    {
+        "number": 15,
+        "type": "mcq",
+        "question": {
+            "en": "which one is the most common genetic bleeding disorder?"
+        },
+        "options": {
+            "en": [
+                "Idiopathic thrombocytopenia purpura",
+                "Von Willabrand disease",
+                "Thalassemia",
+                "Hemophilia"
+            ]
+        },
+        "answer": {
+            "en": "Von Willabrand disease"
+        }
+    },
+    {
+        "number": 16,
+        "type": "mcq",
+        "question": {
+            "en": "which chromosome is defected in thalassemia beta?"
+        },
+        "options": {
+            "en": [
+                "Chromosome 11",
+                "Chromosome 23",
+                "Chromosome 16",
+                "All above"
+            ]
+        },
+        "answer": {
+            "en": "Chromosome 11"
+        }
+    },
+    {
+        "number": 17,
+        "type": "mcq",
+        "question": {
+            "en": "How many type of von Willabrand disease?"
+        },
+        "options": {
+            "en": [
+                "4",
+                "2",
+                "3",
+                "Non of above"
+            ]
+        },
+        "answer": {
+            "en": "3"
+        }
+    },
+    {
+        "number": 18,
+        "type": "mcq",
+        "question": {
+            "en": "what is fetal hemoglobin?"
+        },
+        "options": {
+            "en": [
+                "Is abnormal hemoglobin",
+                "Is adult hemoglobin",
+                "Is abnormal in thalassemia alpha",
+                "Has 2 alpha and 2 gamma chains"
+            ]
+        },
+        "answer": {
+            "en": "Has 2 alpha and 2 gamma chains"
+        }
+    },
+    {
+        "number": 19,
+        "type": "mcq",
+        "question": {
+            "en": "Acute lymphocytic leukemia is an abnormal in"
+        },
+        "options": {
+            "en": [
+                "Chromosome translocation in 15 and 17",
+                "Chromosome translocation in 9 and 22",
+                "Chromosome translocation in 12 and 21",
+                "Chromosome translocation in 9 and 22, 12 and 21"
+            ]
+        },
+        "answer": {
+            "en": "Chromosome translocation in 12 and 21"
+        }
+    },
+    {
+        "number": 20,
+        "type": "mcq",
+        "question": {
+            "en": "Coagulation Factor IX and VIII, located on"
+        },
+        "options": {
+            "en": [
+                "Chromosome L",
+                "Chromosome Y",
+                "Chromosome X",
+                "Chromosome V"
+            ]
+        },
+        "answer": {
+            "en": "Chromosome X"
+        }
+    }
+];
+        const quizDataPart3 = [
+    {
+        "number": 1,
+        "type": "mcq",
+        "question": {
+            "en": "Which one of the following is Hb α2β2?"
+        },
+        "options": {
+            "en": ["Hb F", "Hb A", "Hb A2", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb A"
+        }
+    },
+    {
+        "number": 2,
+        "type": "mcq",
+        "question": {
+            "en": "Which one of the following is Hb α2ϒ2?"
+        },
+        "options": {
+            "en": ["Hb F", "Hb A", "Hb A2", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb F"
+        }
+    },
+    {
+        "number": 3,
+        "type": "mcq",
+        "question": {
+            "en": "Which one of the following is Hb α2∂2?"
+        },
+        "options": {
+            "en": ["Hb F", "Hb A", "Hb A2", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb A2"
+        }
+    },
+    {
+        "number": 4,
+        "type": "mcq",
+        "question": {
+            "en": "Which one of the following is Hb ζ2ϒ2?"
+        },
+        "options": {
+            "en": ["Hb Gower 1", "Hb Gower 2", "Hb Portland", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb Portland"
+        }
+    },
+    {
+        "number": 5,
+        "type": "mcq",
+        "question": {
+            "en": "What Hb is a result of 3 Deletions of α gene in α thalassemia?"
+        },
+        "options": {
+            "en": ["Hb F", "Hb A", "Hb A2", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb H"
+        }
+    },
+    {
+        "number": 6,
+        "type": "mcq",
+        "question": {
+            "en": "Hydrops fetalis involved what Hb?"
+        },
+        "options": {
+            "en": ["Hb F", "Hb A", "Hb A2", "Hb H", "Hb Bart"]
+        },
+        "answer": {
+            "en": "Hb Bart"
+        }
+    },
+    {
+        "number": 7,
+        "type": "mcq",
+        "question": {
+            "en": "What enzyme plays a role in antioxidant to prevent Hemolysis from H2O2?"
+        },
+        "options": {
+            "en": ["LDH", "Enolase", "Aldolase", "G6PD", "PK"]
+        },
+        "answer": {
+            "en": "G6PD"
+        }
+    },
+    {
+        "number": 8,
+        "type": "mcq",
+        "question": {
+            "en": "What enzyme involved in hemolysis through inability to produce pyruvate?"
+        },
+        "options": {
+            "en": ["LDH", "Protein Kinase", "Enolase", "Aldolase", "G6PD"]
+        },
+        "answer": {
+            "en": "Protein Kinase"
+        }
+    },
+    {
+        "number": 9,
+        "type": "mcq",
+        "question": {
+            "en": "What of the following is found in iron deficiency?"
+        },
+        "options": {
+            "en": ["Ferritin ↓", "TIBC ↓", "Hepcidin ↑", "Serum iron ↑", "Saturation ↑"]
+        },
+        "answer": {
+            "en": "Ferritin ↓"
+        }
+    },
+    {
+        "number": 10,
+        "type": "mcq",
+        "question": {
+            "en": "What of the following is found in anemia of chronic disease?"
+        },
+        "options": {
+            "en": ["Ferritin ↓", "TIBC ↑", "Hepcidin ↑", "Serum iron ↑", "Saturation ↑"]
+        },
+        "answer": {
+            "en": "Hepcidin ↑"
+        }
+    },
+    {
+        "number": 11,
+        "type": "mcq",
+        "question": {
+            "en": "Sideroblastic anemia is due to lack of what of the following?"
+        },
+        "options": {
+            "en": ["Iron", "Globin", "Protoporphyrin IX", "Folate"]
+        },
+        "answer": {
+            "en": "Protoporphyrin IX"
+        }
+    },
+    {
+        "number": 12,
+        "type": "mcq",
+        "question": {
+            "en": "Megaloblastic anemia is due to what of the following?"
+        },
+        "options": {
+            "en": ["Enzyme deficiency", "Morphology change", "Vitamin deficiency", "Autoimmune", "EPO ↓"]
+        },
+        "answer": {
+            "en": "Vitamin deficiency"
+        }
+    },
+    {
+        "number": 13,
+        "type": "mcq",
+        "question": {
+            "en": "Intrinsic hemolytic anemia of spherocytosis is due to what of the following?"
+        },
+        "options": {
+            "en": ["Enzyme deficiency", "Morphology change", "Vitamin deficiency", "Autoimmune", "EPO ↓"]
+        },
+        "answer": {
+            "en": "Morphology change"
+        }
+    },
+    {
+        "number": 14,
+        "type": "mcq",
+        "question": {
+            "en": "Megaloblastic anemia associated with neurologic signs is due to what of the following?"
+        },
+        "options": {
+            "en": ["Folate deficiency", "Iron deficiency", "Vitamin B12 deficiency", "G6PD deficiency", "EPO deficiency"]
+        },
+        "answer": {
+            "en": "Vitamin B12 deficiency"
+        }
+    },
+    {
+        "number": 15,
+        "type": "mcq",
+        "question": {
+            "en": "Megaloblastic anemia not associated with neurologic signs is due to what of the following?"
+        },
+        "options": {
+            "en": ["Folate deficiency", "Iron deficiency", "Vitamin B12 deficiency", "G6PD deficiency", "EPO deficiency"]
+        },
+        "answer": {
+            "en": "Folate deficiency"
+        }
+    },
+    {
+        "number": 16,
+        "type": "mcq",
+        "question": {
+            "en": "HUS give rise to anemia through what of the following mechanism?"
+        },
+        "options": {
+            "en": ["Folate deficiency", "Iron deficiency", "Vitamin B12 deficiency", "G6PD deficiency", "Microangiopathy"]
+        },
+        "answer": {
+            "en": "Microangiopathy"
+        }
+    },
+    {
+        "number": 17,
+        "type": "mcq",
+        "question": {
+            "en": "Extrinsic hemolytic anemia give rise to hemoglobinuria is due to what immunoglobulin?"
+        },
+        "options": {
+            "en": ["IgA", "IgM", "IgG", "Ig D", "Ig E"]
+        },
+        "answer": {
+            "en": "IgM"
+        }
+    },
+    {
+        "number": 18,
+        "type": "mcq",
+        "question": {
+            "en": "Autoimmune Hemolysis anemia intrasplenic is due to what immunoglobulin?"
+        },
+        "options": {
+            "en": ["IgA", "IgM", "IgG", "Ig D", "Ig E"]
+        },
+        "answer": {
+            "en": "IgG"
+        }
+    },
+    {
+        "number": 19,
+        "type": "mcq",
+        "question": {
+            "en": "Reticulocyte ↑ in what anemia?"
+        },
+        "options": {
+            "en": ["EPO", "Iron deficiency", "Megaloblastic", "Sideroblastic", "Autoimmune"]
+        },
+        "answer": {
+            "en": "Autoimmune"
+        }
+    },
+    {
+        "number": 20,
+        "type": "mcq",
+        "question": {
+            "en": "Reticulocyte↓ in what anemia?"
+        },
+        "options": {
+            "en": ["Spherocytosis", "EPO deficiency", "Microangiopathy", "Macroangiopathy", "Autoimmune"]
+        },
+        "answer": {
+            "en": "EPO deficiency"
+        }
+    },
+    {
+        "number": 21,
+        "type": "mcq",
+        "question": {
+            "en": "Target cell found in what anemia?"
+        },
+        "options": {
+            "en": ["Thalassemia", "Iron deficiency", "Sideroblastic", "Autoimmune", "Microangiopathy"]
+        },
+        "answer": {
+            "en": "Thalassemia"
+        }
+    },
+    {
+        "number": 22,
+        "type": "mcq",
+        "question": {
+            "en": "Schistocyte found in what anemia?"
+        },
+        "options": {
+            "en": ["Thalassemia", "Iron deficiency", "Sideroblastic", "Autoimmune", "Microangiopathy"]
+        },
+        "answer": {
+            "en": "Microangiopathy"
+        }
+    },
+    {
+        "number": 23,
+        "type": "mcq",
+        "question": {
+            "en": "Microcytic anemia found in what anemia?"
+        },
+        "options": {
+            "en": ["Vitamin B12 deficiency", "Iron deficiency", "G6PD deficiency", "Autoimmune", "Microangiopathy"]
+        },
+        "answer": {
+            "en": "Iron deficiency"
+        }
+    },
+    {
+        "number": 24,
+        "type": "mcq",
+        "question": {
+            "en": "Which of the following best describes the genetic defect in α-thalassemia?"
+        },
+        "options": {
+            "en": ["Point mutation in β-globin gene", "Deletion of one or more α-globin genes", "Mutation in γ-globin gene", "Frameshift mutation in HBB gene"]
+        },
+        "answer": {
+            "en": "Deletion of one or more α-globin genes"
+        }
+    },
+    {
+        "number": 25,
+        "type": "mcq",
+        "question": {
+            "en": "A fetus with generalized edema, hepatosplenomegaly, and Hb Bart’s (γ₄) on electrophoresis most likely has:"
+        },
+        "options": {
+            "en": ["β-thalassemia major", "α-thalassemia with 3 gene deletions", "α-thalassemia with 4 gene deletions", "Sickle cell anemia"]
+        },
+        "answer": {
+            "en": "α-thalassemia with 4 gene deletions"
+        }
+    },
+    {
+        "number": 26,
+        "type": "mcq",
+        "question": {
+            "en": "Which form of α-thalassemia is usually asymptomatic but shows mild microcytosis?"
+        },
+        "options": {
+            "en": ["Silent carrier (1 gene deletion)", "Trait (2 gene deletions)", "Hb H disease (3 gene deletions)", "Hydrops fetalis (4 gene deletions)"]
+        },
+        "answer": {
+            "en": "Silent carrier (1 gene deletion)"
+        }
+    },
+    {
+        "number": 27,
+        "type": "mcq",
+        "question": {
+            "en": "A 9-month-old infant presents with severe anemia, failure to thrive, hepatosplenomegaly. Which is the most likely diagnosis?"
+        },
+        "options": {
+            "en": ["β-thalassemia minor", "β-thalassemia major", "Sickle cell anemia", "Iron-deficiency anemia"]
+        },
+        "answer": {
+            "en": "β-thalassemia major"
+        }
+    },
+    {
+        "number": 28,
+        "type": "mcq",
+        "question": {
+            "en": "Which of the following is TRUE regarding β-thalassemia minor?"
+        },
+        "options": {
+            "en": ["Severe anemia requiring transfusion", "Markedly elevated Hb F", "Usually asymptomatic with mild microcytosis", "Associated with Hb H formation"]
+        },
+        "answer": {
+            "en": "Usually asymptomatic with mild microcytosis"
+        }
+    },
+    {
+        "number": 29,
+        "type": "mcq",
+        "question": {
+            "en": "Hemoglobin electrophoresis in β-thalassemia major shows:"
+        },
+        "options": {
+            "en": ["Normal HbA, HbA₂, and HbF", "↓ HbF, ↑ HbA", "↑ HbF, ↑ HbA₂, ↓ HbA", "↑ HbH"]
+        },
+        "answer": {
+            "en": "↑ HbF, ↑ HbA₂, ↓ HbA"
+        }
+    },
+    {
+        "number": 30,
+        "type": "mcq",
+        "question": {
+            "en": "Which statement about Hb Bart’s (γ₄) is true?"
+        },
+        "options": {
+            "en": ["Seen in HbH disease", "Seen in hydrops fetalis", "Carries oxygen effectively to tissues", "Formed due to excess β chains"]
+        },
+        "answer": {
+            "en": "Seen in hydrops fetalis"
+        }
+    },
+    {
+        "number": 31,
+        "type": "mcq",
+        "question": {
+            "en": "Which of the following combinations of α-gene deletions most often causes HbH disease?"
+        },
+        "options": {
+            "en": ["(--/--)", "(-α/-α)", "(--/-α)", "(-α/αα)"]
+        },
+        "answer": {
+            "en": "(--/-α)"
+        }
+    },
+    {
+        "number": 32,
+        "type": "mcq",
+        "question": {
+            "en": "A newborn with hydrops fetalis is most likely to have which hemoglobin as the major form?"
+        },
+        "options": {
+            "en": ["HbF", "HbH", "HbA", "Hb Bart’s"]
+        },
+        "answer": {
+            "en": "Hb Bart’s"
+        }
+    },
+    {
+        "number": 33,
+        "type": "mcq",
+        "question": {
+            "en": "Which mechanism contributes most to anemia in β-thalassemia major?"
+        },
+        "options": {
+            "en": ["Chronic blood loss", "Decreased RBC production due to iron deficiency", "Ineffective erythropoiesis from α-chain precipitation", "Autoimmune hemolysis"]
+        },
+        "answer": {
+            "en": "Ineffective erythropoiesis from α-chain precipitation"
+        }
+    },
+    {
+        "number": 34,
+        "type": "mcq",
+        "question": {
+            "en": "The fundamental pathophysiological mechanism in Autoimmune Hemolytic Anemia (AIHA) involves:"
+        },
+        "options": {
+            "en": ["Bone marrow failure to produce red blood cells.", "Mechanical destruction of red blood cells by damaged heart valves.", "Autoantibodies directed against antigens on the surface of red blood cells.", "A genetic mutation causing defective hemoglobin."]
+        },
+        "answer": {
+            "en": "Autoantibodies directed against antigens on the surface of red blood cells."
+        }
+    },
+    {
+        "number": 35,
+        "type": "mcq",
+        "question": {
+            "en": "A patient's Direct Antiglobulin Test (Direct Coombs test) is positive. This result indicates:"
+        },
+        "options": {
+            "en": ["The presence of free-flowing antibodies in the patient's serum.", "A deficiency in the complement system.", "The presence of antibodies or complement proteins attached to the patient's red blood cells.", "The specific type of antibody (IgG vs. IgM) causing the hemolysis."]
+        },
+        "answer": {
+            "en": "The presence of antibodies or complement proteins attached to the patient's red blood cells."
+        }
+    },
+    {
+        "number": 36,
+        "type": "mcq",
+        "question": {
+            "en": "In warm AIHA, the most common type of antibody involved and the primary site of red blood cell destruction are:"
+        },
+        "options": {
+            "en": ["IgM; liver", "IgM; blood vessels (intravascular)", "IgG; spleen", "IgA; bone marrow"]
+        },
+        "answer": {
+            "en": "IgG; spleen"
+        }
+    },
+    {
+        "number": 37,
+        "type": "mcq",
+        "question": {
+            "en": "The blood smear finding most characteristic of extravascular hemolysis in warm AIHA is:"
+        },
+        "options": {
+            "en": ["Schistocytes", "Target cells", "Spherocytes", "Heinz bodies"]
+        },
+        "answer": {
+            "en": "Spherocytes"
+        }
+    },
+    {
+        "number": 38,
+        "type": "mcq",
+        "question": {
+            "en": "Which test is most crucial for differentiating between warm and cold types of AIHA?"
+        },
+        "options": {
+            "en": ["Complete Blood Count (CBC)", "Serum Bilurin level", "Direct Antiglobulin Test (DAT) with specific reagents", "Osmotic Fragility Test"]
+        },
+        "answer": {
+            "en": "Direct Antiglobulin Test (DAT) with specific reagents"
+        }
+    },
+    {
+        "number": 39,
+        "type": "mcq",
+        "question": {
+            "en": "A high titer of cold agglutinins is typically associated with which antibody class?"
+        },
+        "options": {
+            "en": ["IgG", "IgE", "IgA", "IgM"]
+        },
+        "answer": {
+            "en": "IgM"
+        }
+    },
+    {
+        "number": 40,
+        "type": "mcq",
+        "question": {
+            "en": "Intravascular hemolysis is more commonly a feature of Cold AIHA than Warm AIHA because:"
+        },
+        "options": {
+            "en": ["IgM antibodies are more efficient at activating the complement cascade, leading to direct lysis of the RBC.", "IgG antibodies are unable to fix complement.", "The liver is a less efficient filter for damaged cells than the spleen.", "Cold temperatures cause physical damage to the RBC membrane."]
+        },
+        "answer": {
+            "en": "IgM antibodies are more efficient at activating the complement cascade, leading to direct lysis of the RBC."
+        }
+    }
+];
+        let quizData;
+
+        let currentPart = 1;
+        let quizState = {};
+
+        // Sound Synthesis
+        const correctSynth = new Tone.Synth().toDestination();
+        const incorrectSynth = new Tone.Synth().toDestination();
+        let audioStarted = false;
+
+        // DOM Elements
+        const part1Btn = document.getElementById('part1-btn');
+        const part2Btn = document.getElementById('part2-btn');
+        const part3Btn = document.getElementById('part3-btn');
+        const quizView = document.getElementById('quiz-view');
+        const editView = document.getElementById('edit-view');
+        const practiceSheetBtn = document.getElementById('practice-sheet-btn');
+        const practiceSheetView = document.getElementById('practice-sheet-view');
+        const showAllBtn = document.getElementById('show-all-btn');
+        const allQuestionsView = document.getElementById('all-questions-view');
+        const editQuizBtn = document.getElementById('edit-quiz-btn');
+        const applyPreviewBtn = document.getElementById('apply-preview-btn');
+        const generateSaveCodeBtn = document.getElementById('generate-save-code-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const editQuestionsContainer = document.getElementById('edit-questions-container');
+        const editQuestionNavArea = document.getElementById('edit-question-navigation');
+        const exportArea = document.getElementById('export-area');
+        const exportOutput = document.getElementById('export-output');
+        const copyFeedbackEl = document.getElementById('copy-feedback');
+
+        const mainScoreTextEl = document.getElementById('main-score-text');
+        const questionNavArea = document.getElementById('question-navigation');
+        const questionArea = document.getElementById('question-area');
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const answerArea = document.getElementById('answer-area');
+        const feedbackArea = document.getElementById('feedback-area');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const redoPartBtn = document.getElementById('redo-part-btn');
+        const resultsArea = document.getElementById('results-area');
+        const resultsScoreEl = document.getElementById('results-score');
+        const summaryEl = document.getElementById('summary');
+        const restartBtn = document.getElementById('restart-btn');
+
+        let isAnswered = false;
+
+        async function startAudio() {
+            if (!audioStarted) {
+                await Tone.start();
+                audioStarted = true;
+            }
+        }
+        
+        function switchPart(part) {
+            currentPart = part;
+
+            part1Btn.classList.remove('bg-indigo-600', 'text-white');
+            part1Btn.classList.add('bg-white', 'text-gray-900');
+            part2Btn.classList.remove('bg-indigo-600', 'text-white');
+            part2Btn.classList.add('bg-white', 'text-gray-900');
+            part3Btn.classList.remove('bg-indigo-600', 'text-white');
+            part3Btn.classList.add('bg-white', 'text-gray-900');
+            
+            let targetBtn;
+            if (part === 1) {
+                quizData = quizDataPart1;
+                targetBtn = part1Btn;
+            } else if (part === 2){
+                quizData = quizDataPart2;
+                targetBtn = part2Btn;
+            } else {
+                quizData = quizDataPart3;
+                targetBtn = part3Btn;
+            }
+            
+            targetBtn.classList.add('bg-indigo-600', 'text-white');
+            targetBtn.classList.remove('bg-white', 'text-gray-900');
+            
+            document.getElementById('quiz-subtitle').textContent = `Subject: Physiopathology 1 ( ${quizData.length} questions)`;
+            loadQuizView();
+        }
+
+        function updateScoreText() {
+            mainScoreTextEl.innerHTML = `Score: ${quizState[currentPart].score} / ${quizData.length}`;
+        }
+
+        function startQuiz() {
+            initializeQuiz();
+        }
+        
+        function initializeQuiz() {
+            quizState = {
+                1: { userAnswers: [], score: 0, currentQuestionIndex: 0 },
+                2: { userAnswers: [], score: 0, currentQuestionIndex: 0 },
+                3: { userAnswers: [], score: 0, currentQuestionIndex: 0 }
+            };
+            currentPart = 1;
+            switchPart(1); 
+        }
+        
+        function loadQuizView() {
+            quizView.classList.remove('hidden');
+            editView.classList.add('hidden');
+            practiceSheetView.classList.add('hidden');
+            allQuestionsView.classList.add('hidden');
+            
+            questionNavArea.classList.remove('hidden');
+            questionArea.classList.remove('hidden');
+            answerArea.classList.remove('hidden');
+            resultsArea.classList.add('hidden');
+
+            renderQuestionButtons();
+            showQuestion();
+            updateScoreText();
+        }
+
+        function renderQuestionButtons() {
+            questionNavArea.innerHTML = '';
+            quizData.forEach((_, index) => {
+                const button = document.createElement('button');
+                button.textContent = index + 1;
+                button.classList.add('question-nav-btn', 'border-2', 'border-gray-300', 'rounded-md');
+                button.addEventListener('click', () => {
+                    quizState[currentPart].currentQuestionIndex = index;
+                    showQuestion();
+                });
+                questionNavArea.appendChild(button);
+            });
+        }
+        
+        function updateQuestionButtonStyles() {
+            const buttons = Array.from(questionNavArea.children);
+            buttons.forEach((button, index) => {
+                button.classList.remove('active', 'answered-correct', 'answered-incorrect');
+                if (quizState[currentPart].userAnswers[index]) {
+                    if(quizState[currentPart].userAnswers[index].isCorrect) {
+                        button.classList.add('answered-correct');
+                    } else {
+                        button.classList.add('answered-incorrect');
+                    }
+                }
+            });
+            const currentQuestionIndex = quizState[currentPart].currentQuestionIndex;
+            if(buttons[currentQuestionIndex]) {
+                buttons[currentQuestionIndex].classList.add('active');
+            }
+        }
+
+        function showQuestion() {
+            resetState();
+            if (quizData.length === 0) {
+                questionTextEl.innerHTML = "No questions in this part.";
+                questionNavArea.innerHTML = '';
+                answerArea.innerHTML = '';
+                nextBtn.classList.add('hidden');
+                prevBtn.classList.add('hidden');
+                questionNumberEl.innerHTML = `Question 0/0`;
+                return;
+            }
+            const currentQuestionIndex = quizState[currentPart].currentQuestionIndex;
+            const userAnswers = quizState[currentPart].userAnswers;
+            const currentQuestion = quizData[currentQuestionIndex];
+            isAnswered = userAnswers[currentQuestionIndex] !== undefined;
+
+            if (isAnswered) {
+                redoBtn.classList.remove('hidden');
+            }
+
+            questionNumberEl.innerHTML = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+            
+            if (currentQuestion.type === 'mcq') {
+                questionTextEl.innerHTML = `${currentQuestion.question.en}`;
+                answerArea.classList.add('grid');
+                answerArea.classList.remove('flex', 'flex-col');
+                currentQuestion.options.en.forEach((optionEn) => {
+                    const button = document.createElement('button');
+                    button.innerHTML = `<span>${optionEn}</span>`;
+                    button.classList.add('option-btn', 'w-full', 'p-4', 'border-2', 'border-gray-300', 'rounded-lg', 'text-left', 'hover:bg-gray-100');
+                    button.addEventListener('click', () => selectAnswer(button, optionEn, currentQuestionIndex, answerArea, feedbackArea));
+
+                    if(isAnswered) {
+                        button.disabled = true;
+                        const userAnswerData = userAnswers[currentQuestionIndex];
+                        const correctAnswerEn = currentQuestion.answer.en;
+                        if (optionEn.trim() === correctAnswerEn.trim()){
+                            button.classList.add('correct');
+                        }
+                        if (optionEn.trim() === userAnswerData.answer.trim() && !userAnswerData.isCorrect){
+                            button.classList.add('incorrect');
+                        }
+                    }
+                    answerArea.appendChild(button);
+                });
+            } else if (currentQuestion.type === 'matching') {
+                questionTextEl.innerHTML = `<strong>${currentQuestion.title}</strong>`;
+                answerArea.classList.remove('grid');
+                answerArea.classList.add('flex', 'flex-col');
+                const optionLetters = currentQuestion.options.en.map((_, i) => String.fromCharCode(65 + i));
+                
+                let matchingHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div>`;
+                currentQuestion.stems.en.forEach((stem, index) => {
+                    matchingHTML += `<div class="flex items-center mb-4 gap-2">
+                        <p class="flex-grow">${stem}</p>
+                        <select id="match-select-${index}" class="border-2 border-gray-300 rounded-md p-2">
+                            <option value="-1">Select</option>
+                            ${optionLetters.map(letter => `<option value="${letter}">${letter}</option>`).join('')}
+                        </select>
+                        <span id="correct-answer-span-${index}" class="text-green-600 font-bold w-24 text-left"></span>
+                    </div>`;
+                });
+                matchingHTML += `</div><div>`;
+                currentQuestion.options.en.forEach((option) => {
+                    matchingHTML += `<p class="mb-2">${option}</p>`;
+                });
+                matchingHTML += `</div></div>`;
+                answerArea.innerHTML = matchingHTML;
+                
+                if (isAnswered) {
+                    const userAnswerData = userAnswers[currentQuestionIndex];
+                    const selects = currentQuestion.stems.en.map((_, index) => document.getElementById(`match-select-${index}`));
+                    selects.forEach((select, index) => {
+                        const userOptionIndex = userAnswerData.answer[index];
+                        if (userOptionIndex !== -1) select.value = String.fromCharCode(65 + userOptionIndex);
+                        select.disabled = true;
+                        const correctOptionIndex = currentQuestion.answer[index];
+                        if (userOptionIndex === correctOptionIndex) {
+                             select.classList.add('correct');
+                        } else {
+                            select.classList.add('incorrect');
+                            const correctAnswerSpan = document.getElementById(`correct-answer-span-${index}`);
+                            if (correctAnswerSpan) {
+                                correctAnswerSpan.textContent = `Correct: ${String.fromCharCode(65 + correctOptionIndex)}`;
+                            }
+                        }
+                    });
+                } else {
+                    const selects = currentQuestion.stems.en.map((_, index) => document.getElementById(`match-select-${index}`));
+                    selects.forEach((select, index) => {
+                        select.addEventListener('change', () => handleMatchSelection(select, index, currentQuestionIndex, answerArea));
+                    });
+                }
+            }
+            updateQuestionButtonStyles();
+            updateButtonVisibility();
+        }
+        
+        function resetState() {
+            feedbackArea.textContent = '';
+            answerArea.innerHTML = '';
+            redoBtn.classList.add('hidden');
+        }
+
+        function updateButtonVisibility() {
+            const currentQuestionIndex = quizState[currentPart].currentQuestionIndex;
+            prevBtn.classList.toggle('hidden', currentQuestionIndex === 0);
+            const allAnswered = quizState[currentPart].userAnswers.filter(Boolean).length === quizData.length;
+            nextBtn.classList.toggle('hidden', allAnswered);
+
+            if (currentQuestionIndex === quizData.length - 1 || allAnswered) {
+                 nextBtn.innerHTML = `<span class="font-semibold">Show Results</span>`;
+            } else {
+                 nextBtn.innerHTML = `<span class="font-semibold">Next Question</span>`;
+            }
+        }
+
+        async function selectAnswer(button, selectedOptionEn, questionIndex, container, feedbackEl) {
+            await startAudio();
+            if (quizState[currentPart].userAnswers[questionIndex]) return;
+            
+            const allButtons = container.querySelectorAll('button');
+            allButtons.forEach(btn => { btn.disabled = true; });
+
+            const currentQuestion = quizData[questionIndex];
+            const isCorrect = selectedOptionEn.trim() === currentQuestion.answer.en.trim();
+            
+            if (isCorrect) {
+                quizState[currentPart].score++;
+                correctSynth.triggerAttackRelease("C5", "8n", Tone.now());
+                button.classList.add('correct');
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = `Correct!`;
+                    feedbackEl.className = 'mt-2 text-center text-md font-medium text-green-600 practice-feedback';
+                }
+            } else {
+                const now = Tone.now();
+                incorrectSynth.triggerAttackRelease("G3", "16n", now);
+                incorrectSynth.triggerAttackRelease("F#3", "8n", now + 0.1);
+                button.classList.add('incorrect');
+                 if (feedbackEl) {
+                    feedbackEl.innerHTML = `Wrong! The correct answer is: ${currentQuestion.answer.en}`;
+                    feedbackEl.className = 'mt-2 text-center text-md font-medium text-red-600 practice-feedback';
+                }
+                allButtons.forEach(btn => {
+                    if (btn.children[0].textContent.trim() === currentQuestion.answer.en.trim()) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            
+            quizState[currentPart].userAnswers[questionIndex] = { isCorrect, answer: selectedOptionEn };
+
+            if (!practiceSheetView.classList.contains('hidden')) {
+                const practiceRedoBtn = document.getElementById(`ps-redo-btn-${questionIndex}`);
+                if (practiceRedoBtn) practiceRedoBtn.classList.remove('hidden');
+            } else {
+                redoBtn.classList.remove('hidden');
+            }
+
+            updateScoreText();
+            updateQuestionButtonStyles();
+            updateButtonVisibility();
+        }
+
+        async function handleMatchSelection(selectElement, stemIndex, questionIndex, container) {
+            await startAudio();
+            const currentQuestion = quizData[questionIndex];
+            const userOptionIndex = selectElement.value !== "-1" ? selectElement.value.charCodeAt(0) - 65 : -1;
+            const correctOptionIndex = currentQuestion.answer[stemIndex];
+
+            if (userOptionIndex === correctOptionIndex) {
+                correctSynth.triggerAttackRelease("C5", "8n", Tone.now());
+                selectElement.classList.add('correct');
+                selectElement.classList.remove('incorrect');
+            } else {
+                const now = Tone.now();
+                incorrectSynth.triggerAttackRelease("G3", "16n", now);
+                incorrectSynth.triggerAttackRelease("F#3", "8n", now + 0.1);
+                selectElement.classList.add('incorrect');
+                selectElement.classList.remove('correct');
+                const correctAnswerSpanId = container.id === 'answer-area' ? `correct-answer-span-${stemIndex}` : `ps-correct-answer-span-${questionIndex}-${stemIndex}`;
+                const correctAnswerSpan = document.getElementById(correctAnswerSpanId);
+                if (correctAnswerSpan) {
+                    correctAnswerSpan.textContent = `Correct: ${String.fromCharCode(65 + correctOptionIndex)}`;
+                }
+            }
+            selectElement.disabled = true;
+            
+            const allSelects = Array.from(container.querySelectorAll('select'));
+            const allAnswered = allSelects.every(s => s.disabled);
+
+            if (allAnswered) {
+                if (quizState[currentPart].userAnswers[questionIndex]) return;
+                const userSelections = {};
+                let correctMatches = 0;
+                allSelects.forEach((s, i) => {
+                    const selectedVal = s.value !== "-1" ? s.value.charCodeAt(0) - 65 : -1;
+                    userSelections[i] = selectedVal;
+                    if (selectedVal === currentQuestion.answer[i]) correctMatches++;
+                });
+                
+                const isFullyCorrect = correctMatches === currentQuestion.stems.en.length;
+                if (isFullyCorrect) quizState[currentPart].score++;
+                
+                quizState[currentPart].userAnswers[questionIndex] = { isCorrect: isFullyCorrect, answer: userSelections };
+                
+                if (!practiceSheetView.classList.contains('hidden')) {
+                    const practiceRedoBtn = document.getElementById(`ps-redo-btn-${questionIndex}`);
+                    if (practiceRedoBtn) practiceRedoBtn.classList.remove('hidden');
+                } else {
+                    redoBtn.classList.remove('hidden');
+                }
+                
+                updateScoreText();
+                updateQuestionButtonStyles();
+                updateButtonVisibility();
+            }
+        }
+
+        function togglePracticeSheetView() {
+            quizView.classList.toggle('hidden');
+            practiceSheetView.classList.toggle('hidden');
+            allQuestionsView.classList.add('hidden');
+
+            if (!practiceSheetView.classList.contains('hidden')) {
+                renderPracticeSheet();
+                practiceSheetBtn.textContent = 'Back to Quiz';
+            } else {
+                practiceSheetBtn.textContent = 'Practice Sheet';
+                loadQuizView(); // Reload single question view to reflect any changes
+            }
+        }
+
+        function toggleAllQuestionsView() {
+            quizView.classList.toggle('hidden');
+            allQuestionsView.classList.toggle('hidden');
+            practiceSheetView.classList.add('hidden');
+
+            if (!allQuestionsView.classList.contains('hidden')) {
+                renderAllQuestions();
+                showAllBtn.textContent = 'Back to Quiz';
+            } else {
+                showAllBtn.textContent = 'Show Answers';
+            }
+        }
+
+        function renderAllQuestions() {
+            allQuestionsView.innerHTML = ''; // Clear previous content
+
+            const title = document.createElement('h2');
+            title.className = 'text-3xl font-bold text-center mb-6 text-gray-800';
+            title.textContent = `All Questions & Answers - Part ${currentPart}`;
+            allQuestionsView.appendChild(title);
+
+            quizData.forEach(q => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'mb-6 p-4 border rounded-lg bg-gray-50';
+
+                let contentHTML = `<p class="font-bold text-lg mb-2">${q.number}. ${q.type === 'mcq' ? q.question.en : q.title}</p>`;
+
+                if (q.type === 'mcq') {
+                    contentHTML += '<ul class="list-disc list-inside space-y-1">';
+                    q.options.en.forEach(option => {
+                        const isCorrect = option.trim() === q.answer.en.trim();
+                        contentHTML += `<li class="${isCorrect ? 'text-green-700 font-semibold' : 'text-gray-700'}">${option}${isCorrect ? ' &check;' : ''}</li>`;
+                    });
+                    contentHTML += '</ul>';
+                } else if (q.type === 'matching') {
+                    contentHTML += '<ul class="list-none space-y-1 mt-2">';
+                     q.stems.en.forEach((stem, index) => {
+                        const correctOptionIndex = q.answer[index];
+                        const correctOptionText = q.options.en[correctOptionIndex];
+                        contentHTML += `<li class="text-gray-800">${stem} &rarr; <span class="font-semibold text-green-700">${correctOptionText}</span></li>`;
+                    });
+                    contentHTML += '</ul>';
+                }
+                questionDiv.innerHTML = contentHTML;
+                allQuestionsView.appendChild(questionDiv);
+            });
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'mt-8 bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg block mx-auto';
+            backBtn.innerHTML = '<span class="font-semibold">Back to Quiz</span>';
+            backBtn.addEventListener('click', toggleAllQuestionsView);
+            allQuestionsView.appendChild(backBtn);
+        }
+
+        function renderPracticeSheet() {
+            practiceSheetView.innerHTML = ''; 
+            const title = document.createElement('h2');
+            title.className = 'text-3xl font-bold text-center mb-6 text-gray-800';
+            title.textContent = `Practice Sheet - Part ${currentPart}`;
+            practiceSheetView.appendChild(title);
+
+            quizData.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.id = `ps-question-${index}`;
+                questionDiv.className = 'mb-6 p-4 border rounded-lg bg-gray-50';
+                
+                const questionHeader = document.createElement('div');
+                questionHeader.className = 'flex justify-between items-start';
+                
+                const questionTitle = document.createElement('p');
+                questionTitle.className = 'font-bold text-lg mb-2 flex-grow';
+                questionTitle.innerHTML = `${q.number}. ${q.type === 'mcq' ? q.question.en : q.title}`;
+                
+                const redoBtn = document.createElement('button');
+                redoBtn.id = `ps-redo-btn-${index}`;
+                redoBtn.textContent = 'Redo';
+                redoBtn.className = 'hidden bg-yellow-500 text-white font-bold py-1 px-4 rounded-lg hover:bg-yellow-600 text-sm';
+                redoBtn.addEventListener('click', () => redoPracticeSheetQuestion(index));
+                
+                questionHeader.appendChild(questionTitle);
+                questionHeader.appendChild(redoBtn);
+
+                const answersContainer = document.createElement('div');
+                const feedbackEl = document.createElement('div');
+                feedbackEl.className = 'practice-feedback';
+
+                questionDiv.appendChild(questionHeader);
+
+                if (q.type === 'mcq') {
+                    answersContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-3 mt-4';
+                    q.options.en.forEach(optionEn => {
+                        const button = document.createElement('button');
+                        button.innerHTML = `<span>${optionEn}</span>`;
+                        button.className = 'option-btn w-full p-3 border-2 border-gray-300 rounded-lg text-left hover:bg-gray-100';
+                        button.addEventListener('click', () => selectAnswer(button, optionEn, index, answersContainer, feedbackEl));
+                        answersContainer.appendChild(button);
+                    });
+                } else if (q.type === 'matching') {
+                    const optionLetters = q.options.en.map((_, i) => String.fromCharCode(65 + i));
+                    let matchingHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4"><div>`;
+                    q.stems.en.forEach((stem, stemIndex) => {
+                        matchingHTML += `<div class="flex items-center mb-4 gap-2">
+                            <p class="flex-grow">${stem}</p>
+                            <select id="ps-match-select-${index}-${stemIndex}" class="border-2 border-gray-300 rounded-md p-2">
+                                <option value="-1">Select</option>
+                                ${optionLetters.map(letter => `<option value="${letter}">${letter}</option>`).join('')}
+                            </select>
+                            <span id="ps-correct-answer-span-${index}-${stemIndex}" class="text-green-600 font-bold w-24 text-left"></span>
+                        </div>`;
+                    });
+                    matchingHTML += `</div><div>`;
+                    q.options.en.forEach((option) => {
+                        matchingHTML += `<p class="mb-2">${option}</p>`;
+                    });
+                    matchingHTML += `</div></div>`;
+                    answersContainer.innerHTML = matchingHTML;
+                }
+
+                questionDiv.appendChild(answersContainer);
+                questionDiv.appendChild(feedbackEl);
+                practiceSheetView.appendChild(questionDiv);
+
+                 if (q.type === 'matching') {
+                    q.stems.en.forEach((_, stemIndex) => {
+                         const selectEl = document.getElementById(`ps-match-select-${index}-${stemIndex}`);
+                         selectEl.addEventListener('change', () => handleMatchSelection(selectEl, stemIndex, index, answersContainer));
+                    });
+                }
+
+                if (quizState[currentPart].userAnswers[index]) {
+                    redoBtn.classList.remove('hidden');
+                    const userAnswerData = quizState[currentPart].userAnswers[index];
+                    if (q.type === 'mcq') {
+                        Array.from(answersContainer.children).forEach(button => {
+                            button.disabled = true;
+                            const optionText = button.textContent.trim();
+                             if (optionText === q.answer.en.trim()) button.classList.add('correct');
+                             if (optionText === userAnswerData.answer.trim() && !userAnswerData.isCorrect) button.classList.add('incorrect');
+                        });
+                    } else if (q.type === 'matching') {
+                        const selects = q.stems.en.map((_, stemIndex) => document.getElementById(`ps-match-select-${index}-${stemIndex}`));
+                        selects.forEach((select, stemIndex) => {
+                            select.disabled = true;
+                            const userOptionIndex = userAnswerData.answer[stemIndex];
+                            if(userOptionIndex !== -1) select.value = String.fromCharCode(65 + userOptionIndex);
+                            const correctOptionIndex = q.answer[stemIndex];
+                            if(userOptionIndex === correctOptionIndex) select.classList.add('correct');
+                            else {
+                                select.classList.add('incorrect');
+                                const span = document.getElementById(`ps-correct-answer-span-${index}-${stemIndex}`);
+                                if (span) span.textContent = `Correct: ${String.fromCharCode(65 + correctOptionIndex)}`;
+                            }
+                        });
+                    }
+                }
+            });
+            
+            const backBtn = document.createElement('button');
+            backBtn.className = 'mt-8 bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-lg block mx-auto';
+            backBtn.innerHTML = '<span class="font-semibold">Back to Quiz</span>';
+            backBtn.addEventListener('click', togglePracticeSheetView);
+            practiceSheetView.appendChild(backBtn);
+        }
+
+        function redoPracticeSheetQuestion(questionIndex) {
+            const answerData = quizState[currentPart].userAnswers[questionIndex];
+            if (!answerData) return;
+
+            if (answerData.isCorrect) {
+                quizState[currentPart].score--;
+            }
+
+            quizState[currentPart].userAnswers[questionIndex] = undefined;
+            updateScoreText();
+            updateQuestionButtonStyles();
+
+            const questionContainer = document.getElementById(`ps-question-${questionIndex}`);
+            if (!questionContainer) return;
+
+            const question = quizData[questionIndex];
+            
+            if (question.type === 'mcq') {
+                const buttons = questionContainer.querySelectorAll('button.option-btn');
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'incorrect');
+                });
+            } else if (question.type === 'matching') {
+                const selects = questionContainer.querySelectorAll('select');
+                selects.forEach((select, stemIndex) => {
+                    select.disabled = false;
+                    select.value = '-1';
+                    select.classList.remove('correct', 'incorrect');
+                    const span = document.getElementById(`ps-correct-answer-span-${questionIndex}-${stemIndex}`);
+                    if (span) span.textContent = '';
+                });
+            }
+
+            const feedbackEl = questionContainer.querySelector('.practice-feedback');
+            if (feedbackEl) feedbackEl.innerHTML = '';
+            
+            const redoButton = document.getElementById(`ps-redo-btn-${questionIndex}`);
+            if (redoButton) redoButton.classList.add('hidden');
+        }
+
+
+        function showResults() {
+            questionNavArea.classList.add('hidden');
+            questionArea.classList.add('hidden');
+            answerArea.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            prevBtn.classList.add('hidden');
+            redoBtn.classList.add('hidden');
+            feedbackArea.textContent = '';
+            resultsArea.classList.remove('hidden');
+            resultsScoreEl.innerHTML = `Your final score is ${quizState[currentPart].score} out of ${quizData.length}.`;
+            summaryEl.innerHTML = `<div class="text-center mb-4"><h3 class="text-xl font-bold text-gray-700">Review Your Answers:</h3></div>`; 
+            
+            quizState[currentPart].userAnswers.forEach((ua, index) => {
+                if (!ua) return;
+                const qData = quizData[index];
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('mb-4', 'p-3', 'rounded-md', ua.isCorrect ? 'bg-blue-100' : 'bg-red-100');
+                
+                if (qData.type === 'mcq') {
+                    const correctAnswerText = !ua.isCorrect ? `Correct answer: ${qData.answer.en}` : '';
+                    resultDiv.innerHTML = `
+                        <p class="font-semibold">${qData.number}. ${qData.question.en}</p>
+                        <p class="text-sm ${ua.isCorrect ? 'text-blue-700' : 'text-red-700'}">Your answer: ${ua.answer}</p>
+                        <p class="text-sm text-gray-600">${correctAnswerText}</p>`;
+                } else if (qData.type === 'matching') {
+                    let matchesHTML = '';
+                    qData.stems.en.forEach((stem, stemIndex) => {
+                        const userLetter = ua.answer[stemIndex] !== -1 ? String.fromCharCode(65 + ua.answer[stemIndex]) : 'None';
+                        const correctLetter = String.fromCharCode(65 + qData.answer[stemIndex]);
+                        const isMatchCorrect = ua.answer[stemIndex] === qData.answer[stemIndex];
+                        matchesHTML += `<li class="text-sm ${isMatchCorrect ? 'text-blue-700' : 'text-red-700'}">
+                            ${stem} &rarr; Your answer: ${userLetter}. ${!isMatchCorrect ? `Correct: ${correctLetter}` : ''}</li>`;
+                    });
+                    resultDiv.innerHTML = `<p class="font-semibold">${qData.number}. ${qData.title}</p>
+                        <ul class="list-disc list-inside mt-2">${matchesHTML}</ul>`;
+                }
+                summaryEl.appendChild(resultDiv);
+            });
+        }
+        
+        function redoQuestion() {
+            const currentQuestionIndex = quizState[currentPart].currentQuestionIndex;
+            const answerData = quizState[currentPart].userAnswers[currentQuestionIndex];
+            if (!answerData) return;
+
+            if (answerData.isCorrect) {
+                quizState[currentPart].score--;
+            }
+            quizState[currentPart].userAnswers[currentQuestionIndex] = undefined;
+            
+            updateScoreText();
+            showQuestion();
+        }
+
+        function redoPart() {
+            quizState[currentPart] = { userAnswers: [], score: 0, currentQuestionIndex: 0 };
+            loadQuizView();
+        }
+
+        // --- EDIT MODE FUNCTIONS (Simplified for brevity) ---
+        
+        function toggleEditMode() {
+            quizView.classList.toggle('hidden');
+            editView.classList.toggle('hidden');
+            practiceSheetView.classList.add('hidden');
+            allQuestionsView.classList.add('hidden');
+            if (!editView.classList.contains('hidden')) {
+                renderEditView();
+            }
+            exportArea.classList.add('hidden');
+        }
+
+        function renderEditView() {
+            editQuestionsContainer.innerHTML = '';
+            editQuestionNavArea.innerHTML = '';
+            quizData.forEach((q, index) => {
+                const navButton = document.createElement('button');
+                navButton.textContent = index + 1;
+                navButton.className = 'question-nav-btn border-2 border-gray-300 rounded-md';
+                navButton.addEventListener('click', () => document.getElementById(`edit-q-${index}`).scrollIntoView({ behavior: 'smooth' }));
+                editQuestionNavArea.appendChild(navButton);
+                
+                const qDiv = document.createElement('div');
+                qDiv.id = `edit-q-${index}`;
+                qDiv.className = 'border p-4 rounded-lg mb-4 bg-gray-50 scroll-mt-4';
+                const correctAnserIndex = q.type === 'mcq' ? q.options.en.map(o => o.trim()).indexOf(q.answer.en.trim()) : -1;
+
+                qDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-bold text-lg">Question ${index + 1}</p>
+                        <button class="delete-question-btn bg-red-500 text-white font-bold py-1 px-3 rounded hover:bg-red-600" data-index="${index}">Delete</button>
+                    </div>
+                    <label class="edit-label">Question (English)</label>
+                    <textarea class="edit-input question-en">${q.type === 'mcq' ? q.question.en : q.title}</textarea>
+                    <div class="options-container mt-4">
+                    ${q.type === 'mcq' ?
+                        q.options.en.map((optEn, optIndex) => `
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="radio" name="correct-answer-${index}" ${optIndex === correctAnserIndex ? 'checked' : ''}>
+                                <input type="text" class="edit-input option-en" value="${optEn}">
+                            </div>
+                        `).join('') : ''
+                    }
+                    </div>
+                `;
+                editQuestionsContainer.appendChild(qDiv);
+            });
+
+            document.querySelectorAll('.delete-question-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                quizData.splice(parseInt(e.target.dataset.index, 10), 1);
+                renderEditView();
+            }));
+        }
+
+        function getEditedData() {
+            const newQuizData = [];
+            editQuestionsContainer.querySelectorAll('.border').forEach((form, index) => {
+                const q = { number: index + 1, type: 'mcq', question: { en: form.querySelector('.question-en').value } };
+                const optInputs = Array.from(form.querySelectorAll('.option-en'));
+                const radios = Array.from(form.querySelectorAll('input[type="radio"]'));
+                q.options = { en: optInputs.map(input => input.value) };
+                q.answer = { en: q.options.en[radios.findIndex(r => r.checked)] };
+                newQuizData.push(q);
+            });
+            return newQuizData;
+        }
+
+        function applyToPreview() {
+            const editedData = getEditedData();
+            if (currentPart === 1) quizDataPart1 = editedData;
+            else if (currentPart === 2) quizDataPart2 = editedData;
+            else quizDataPart3 = editedData;
+            quizData = editedData;
+            toggleEditMode();
+            initializeQuiz();
+        }
+
+        function generateSaveCode() {
+            const data = getEditedData();
+            const varName = `quizDataPart${currentPart}`;
+            exportOutput.value = `const ${varName} = ${JSON.stringify(data, null, 4)};`;
+            exportArea.classList.remove('hidden');
+        }
+
+        // Event Listeners
+        part1Btn.addEventListener('click', () => switchPart(1));
+        part2Btn.addEventListener('click', () => switchPart(2));
+        part3Btn.addEventListener('click', () => switchPart(3));
+        practiceSheetBtn.addEventListener('click', togglePracticeSheetView);
+        showAllBtn.addEventListener('click', toggleAllQuestionsView);
+        
+        prevBtn.addEventListener('click', () => {
+            if (quizState[currentPart].currentQuestionIndex > 0) {
+                quizState[currentPart].currentQuestionIndex--;
+                showQuestion();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const allAnswered = quizState[currentPart].userAnswers.filter(Boolean).length === quizData.length;
+            if (quizState[currentPart].currentQuestionIndex < quizData.length - 1 && !allAnswered) {
+                quizState[currentPart].currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        });
+        
+        restartBtn.addEventListener('click', startQuiz);
+        redoBtn.addEventListener('click', redoQuestion);
+        redoPartBtn.addEventListener('click', redoPart);
+        editQuizBtn.addEventListener('click', toggleEditMode);
+        applyPreviewBtn.addEventListener('click', applyToPreview);
+        generateSaveCodeBtn.addEventListener('click', generateSaveCode);
+        cancelEditBtn.addEventListener('click', toggleEditMode);
+        addQuestionBtn.addEventListener('click', () => {
+            quizData.push({ number: quizData.length + 1, type: 'mcq', question: { en: "New Question" }, options: { en: ["A", "B", "C", "D"] }, answer: { en: "A" } });
+            renderEditView();
+        });
+        exportOutput.addEventListener('click', () => {
+            exportOutput.select();
+            document.execCommand('copy');
+            copyFeedbackEl.textContent = 'Code copied!';
+            setTimeout(() => { copyFeedbackEl.textContent = '' }, 2000);
+        });
+
+        window.addEventListener('beforeunload', e => {
+            e.preventDefault();
+            e.returnValue = '';
+        });
+
+        // Initial start
+        initializeQuiz();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
